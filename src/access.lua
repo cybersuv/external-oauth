@@ -54,6 +54,7 @@ function _M.run(conf)
             local access_token = decode_token(encrypted_token, conf)
             if not access_token then
                 -- broken access token
+                ngx.log(ngx.NOTICE,"Access token invalid..redirecting to callback : " .. callback_url )
                 return redirect_to_auth( conf, callback_url )
             end
 
@@ -128,7 +129,7 @@ function decode_token(token, conf)
     ngx.log(ngx.NOTICE,"Decoding token...")
     status, token = pcall(function () return crypto.decrypt("aes-128-cbc", ngx.decode_base64(token), crypto.digest('md5',conf.client_secret)) end)
     if status then
-        ngx.log(ngx.NOTICE,"Decoded token..")
+        ngx.log(ngx.NOTICE,"Decoded token : " .. token)
         return token
     else
         return nil
