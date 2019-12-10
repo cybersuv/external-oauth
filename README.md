@@ -1,6 +1,6 @@
 # Kong External OAUTH 2.0
 
-A Kong plugin, that let you use an external Oauth 2.0 provider to protect your API.
+A Kong plugin, that let you use an external Oauth 2.0 provider to protect your API. This plugin is a fork from original "https://github.com/mogui/kong-external-oauth" one. The mentioned one was last updated in 2016. Hence, for the compatibility with new Kong version, this fork is created. Thanks to "Niko Usai" for the original source.
 
 ## Description
 
@@ -68,11 +68,11 @@ $ curl -X POST http://kong:8001/apis/{api}/plugins \
 In addition to the `user_keys` will be added a `X-OAUTH-TOKEN` header with the access token of the provider.
 
 ## Author
-Niko Usai
+Suvankar Bhattacharya
 
 ## License
 
-Copyright 2016 Niko Usai
+Copyright 2019 Suvankar Bhattacharya
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
