@@ -43,7 +43,7 @@ function _M.run(conf)
 
     -- check if we're calling the callback endpoint
     if ngx.re.match(ngx.var.request_uri, string.format(OAUTH_CALLBACK, path_prefix)) then
-        print("Detected callback in the URL..passing to callback handler")
+        ngx.log("Detected callback in the URL..passing to callback handler")
         handle_callback(conf, callback_url)
     else
         local encrypted_token = ngx.var.cookie_EOAuthToken
@@ -116,7 +116,7 @@ function redirect_to_auth( conf, callback_url )
     ngx.header["Set-Cookie"] = "EOAuthRedirectBack=" .. ngx.var.request_uri .. "; path=/;Max-Age=120"
     -- Redirect to the /oauth endpoint
     local oauth_authorize = conf.authorize_url .. "?response_type=code&client_id=" .. conf.client_id .. "&redirect_uri=" .. callback_url .. "&scope=" .. conf.scope
-    print("Redirecting for authorization code to : " .. oauth_authorize)
+    ngx.log("Redirecting for authorization code to : " .. oauth_authorize)
     return ngx.redirect(oauth_authorize)
 end
 
@@ -125,10 +125,10 @@ function encode_token(token, conf)
 end
 
 function decode_token(token, conf)
-    print("Decoding token...")
+    ngx.log("Decoding token...")
     status, token = pcall(function () return crypto.decrypt("aes-128-cbc", ngx.decode_base64(token), crypto.digest('md5',conf.client_secret)) end)
     if status then
-        print("Decoded token..")
+        ngx.log("Decoded token..")
         return token
     else
         return nil
@@ -137,11 +137,11 @@ end
 
 -- Callback Handling
 function  handle_callback( conf, callback_url )
-    print("Inside callback handler..")
+    ngx.log("Inside callback handler..")
     local args = ngx.req.get_uri_args()
 
     if args.code then
-        print("Authorization code found..going to call for token..")
+        ngx.log("Authorization code found..going to call for token..")
         local httpc = http:new()
         local res, err = httpc:request_uri(conf.token_url, {
             method = "POST",
@@ -151,14 +151,16 @@ function  handle_callback( conf, callback_url )
               ["Content-Type"] = "application/x-www-form-urlencoded",
             }
         })
-        print(res)
+        ngx.log("After call for token. Now will check whether result is there.")
         if not res then
+            ngx.log("Failed to request.") 
             ngx.say("failed to request: ", err)
             ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
         end
 
         local json = cjson.decode(res.body)
         local access_token = json.access_token
+        ngx.log("Access token : " .. access_token)
         if not access_token then
             ngx.say(json.error_description)
             ngx.exit(ngx.HTTP_BAD_REQUEST)
@@ -169,8 +171,10 @@ function  handle_callback( conf, callback_url )
         -- Support redirection back to your request if necessary
         local redirect_back = ngx.var.cookie_EOAuthRedirectBack
         if redirect_back then
+            ngx.log("Redirecting back to user url.")
             return ngx.redirect(redirect_back)
         else
+            ngx.log("Redirecting back to route paths : " .. ngx.ctx.route.paths)
             return ngx.redirect(ngx.ctx.route.paths)
         end
     else
