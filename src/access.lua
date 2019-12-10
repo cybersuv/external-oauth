@@ -132,7 +132,7 @@ end
 
 function get_user_payload(token)
      ngx.log(ngx.NOTICE,"Extracting user payload from token")
-     local tokenpart = split(token,".")
+     local tokenpart = string.gmatch(token,"[^.]*")
      local user_payload = ngx.decode_base64(tokenpart[1])
      if user_payload then
           return user_payload
