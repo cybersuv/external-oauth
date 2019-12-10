@@ -1,7 +1,7 @@
 package = "external-oauth"
 version = "19.12-0"
 source = {
-  url = "..."
+  url = "https://github.com/cybersuv/external-oauth.git"
 }
 description = {
   summary = "A Kong plugin, that let you use an external Oauth 2.0 provider to protect your API. Customized from git://github.com/mogui/kong-external-oauth to have latest service support.",
