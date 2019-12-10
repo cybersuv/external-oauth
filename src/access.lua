@@ -60,6 +60,7 @@ function _M.run(conf)
 
             -- Get user info
             if not ngx.var.cookie_EOAuthUserInfo then
+                ngx.log(ngx.NOTICE,"User Info Not found. Getting ")
                 local httpc = http:new()
                 local res, err = httpc:request_uri(conf.user_url, {
                     method = "GET",
@@ -72,6 +73,7 @@ function _M.run(conf)
                 if res then
                     -- redirect to auth if user result is invalid not 200
                     if res.status ~= 200 then
+                        ngx.log(ngx.NOTICE,"Response status is not 200. Redirecting to auth again.")
                         return redirect_to_auth( conf, callback_url )
                     end
 
