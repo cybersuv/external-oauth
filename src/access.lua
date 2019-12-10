@@ -43,7 +43,7 @@ function _M.run(conf)
 
     -- check if we're calling the callback endpoint
     if ngx.re.match(ngx.var.request_uri, string.format(OAUTH_CALLBACK, path_prefix)) then
-        print("Detected callback in the URL..passing to callback handler)
+        print("Detected callback in the URL..passing to callback handler")
         handle_callback(conf, callback_url)
     else
         local encrypted_token = ngx.var.cookie_EOAuthToken
