@@ -61,23 +61,15 @@ function _M.run(conf)
             -- Get user info
             if not ngx.var.cookie_EOAuthUserInfo then
                 ngx.log(ngx.NOTICE,"User Info Not found. Getting ")
-                local httpc = http:new()
-                local res, err = httpc:request_uri(conf.user_url, {
-                    method = "GET",
-                    ssl_verify = false,
-                    headers = {
-                      ["Authorization"] = "Bearer " .. access_token,
-                    }
-                })
-
+                -- We will get decrypted payload from access token here
+                res = get_user_payload(access_token)
                 if res then
+                    local json = cjson.decode(res)
                     -- redirect to auth if user result is invalid not 200
-                    if res.status ~= 200 then
-                        ngx.log(ngx.NOTICE,"Response status is not 200. Redirecting to auth again.")
+                    if not json.unique_name then
+                        ngx.log(ngx.NOTICE,"Unique Name field not present. Bad token. Re-try authentication.")
                         return redirect_to_auth( conf, callback_url )
                     end
-
-                    local json = cjson.decode(res.body)
 
                     if conf.hosted_domain ~= "" and conf.email_key ~= "" then
                         if not pl_stringx.endswith(json[conf.email_key], conf.hosted_domain) then
@@ -137,6 +129,18 @@ function decode_token(token, conf)
         return nil
     end
 end
+
+function get_user_payload(token)
+     ngx.log(ngx.NOTICE,"Extracting user payload from token")
+     local tokenpart = split(token,".")
+     local user_payload = ngx.decode_base64(tokenpart[1])
+     if user_payload then
+          return user_payload
+     else
+          return nil
+     end
+end
+     
 
 -- Callback Handling
 function  handle_callback( conf, callback_url )
