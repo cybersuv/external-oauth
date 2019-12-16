@@ -80,10 +80,20 @@ function _M.run(conf)
                         end
                     end
                     
-                    for i, key in ipairs(conf.user_keys) do
-                        ngx.header["X-Oauth-".. key] = json[key]
-                        ngx.req.set_header("X-Oauth-".. key, json[key])
-                        ngx.log(ngx.NOTICE,"Added header X-Oauth-" .. key .. " = " .. json[key])
+                    -- for i, key in ipairs(conf.user_keys) do
+                    --    ngx.header["X-Oauth-".. key] = json[key]
+                    --    ngx.req.set_header("X-Oauth-".. key, json[key])
+                    --    ngx.log(ngx.NOTICE,"Added header X-Oauth-" .. key .. " = " .. json[key])
+                    -- end
+                         
+                    for item in string.gmatch(conf.user_keys,"[^,]*") do
+                        if not isempty(item) then
+                           ngx.header["X-Oauth-".. item] = json[item]
+                           ngx.req.set_header("X-Oauth-".. item, json[item]) 
+                           ngx.log(ngx.NOTICE,"Added header X-Oauth-" .. item .. " = " .. json[item])
+                        else
+                           ngx.log(ngx.NOTICE,"Empty value.")
+                        end
                     end
                     ngx.header["X-Oauth-Token"] = access_token
 
