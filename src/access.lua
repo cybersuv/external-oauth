@@ -83,6 +83,7 @@ function _M.run(conf)
                     for i, key in ipairs(conf.user_keys) do
                         ngx.header["X-Oauth-".. key] = json[key]
                         ngx.req.set_header("X-Oauth-".. key, json[key])
+                        ngx.log(ngx.NOTICE,"Added header X-Oauth-" .. key .. " = " .. json[key])
                     end
                     ngx.header["X-Oauth-Token"] = access_token
 
