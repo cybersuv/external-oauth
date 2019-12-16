@@ -136,6 +136,7 @@ function get_user_payload(token)
      local i = 0
      for item in string.gmatch(token,"[^.]*") do
           tokenpart[i] = item
+          ngx.log(ngx.NOTICE,"Tokenpart -> " .. tokenpart[i])
           i = i+1
      end
      
