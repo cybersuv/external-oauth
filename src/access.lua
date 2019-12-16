@@ -135,9 +135,11 @@ function get_user_payload(token)
      local tokenpart = {}
      local i = 0
      for item in string.gmatch(token,"[^.]*") do
-          tokenpart[i] = item
-          ngx.log(ngx.NOTICE,"Tokenpart -> " .. tokenpart[i])
-          i = i+1
+          if not isempty(item) then
+               tokenpart[i] = item
+               ngx.log(ngx.NOTICE,"Tokenpart -> " .. tokenpart[i])
+               i = i+1
+          end
      end
      
      local user_payload = ngx.decode_base64(tokenpart[1])
@@ -147,7 +149,11 @@ function get_user_payload(token)
           return nil
      end
 end
-     
+
+function isempty(s)
+  return s == nil or s == ''
+end
+
 
 -- Callback Handling
 function  handle_callback( conf, callback_url )
