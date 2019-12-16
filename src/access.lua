@@ -65,6 +65,7 @@ function _M.run(conf)
                 res = get_user_payload(access_token)
                 if res then
                     local json = cjson.decode(res)
+                    ngx.log(ngx.NOTICE,"User Payload -> " .. res)
                     -- redirect to auth if user result is invalid not 200
                     if not json.unique_name then
                         ngx.log(ngx.NOTICE,"Unique Name field not present. Bad token. Re-try authentication.")
