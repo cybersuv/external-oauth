@@ -137,7 +137,7 @@ function get_user_payload(token)
      for item in string.gmatch(token,"[^.]*") do
           if not isempty(item) then
                tokenpart[i] = item
-               ngx.log(ngx.NOTICE,"Tokenpart -> " .. tokenpart[i])
+               ngx.log(ngx.NOTICE,"Tokenpart[" .. i .. "] -> " .. tokenpart[i])
                i = i+1
           end
      end
