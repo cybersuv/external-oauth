@@ -79,7 +79,7 @@ function _M.run(conf)
                             return
                         end
                     end
-
+                    ngx.log(ngx.NOTICE,"conf.user_keys -> " .. conf.user_keys)
                     for i, key in ipairs(conf.user_keys) do
                         ngx.header["X-Oauth-".. key] = json[key]
                         ngx.req.set_header("X-Oauth-".. key, json[key])
