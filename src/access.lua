@@ -91,6 +91,7 @@ function _M.run(conf)
                         if not isempty(item) then
                            ngx.header["X-Oauth-".. item] = json[item]
                            ngx.req.set_header("X-Oauth-".. item, json[item]) 
+                           ngx.header["Set-Cookie"] = "X-Oauth-".. item .. "=" .. json[item]
                            ngx.log(ngx.NOTICE,"Added header X-Oauth-" .. item .. " = " .. json[item])
                         else
                            ngx.log(ngx.NOTICE,"Empty value.")
