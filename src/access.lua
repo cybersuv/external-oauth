@@ -60,58 +60,17 @@ function _M.run(conf)
             end
 
             -- Get user info
-            if not ngx.var.cookie_EOAuthUserInfo then
-                ngx.log(ngx.NOTICE,"User Info Not found. Getting ")
-                -- We will get decrypted payload from access token here
-                res = get_user_payload(access_token)
-                if res then
-                    local json = cjson.decode(res)
-                    ngx.log(ngx.NOTICE,"User Payload -> " .. res)
-                    -- redirect to auth if user result is invalid not 200
-                    if not json.unique_name then
-                        ngx.log(ngx.NOTICE,"Unique Name field not present. Bad token. Re-try authentication.")
-                        return redirect_to_auth( conf, callback_url )
-                    end
-
-                    if conf.hosted_domain ~= "" and conf.email_key ~= "" then
-                        if not pl_stringx.endswith(json[conf.email_key], conf.hosted_domain) then
-                            ngx.say("Hosted domain is not matching")
-                            ngx.exit(ngx.HTTP_UNAUTHORIZED)
-                            return
-                        end
-                    end
-                    
-                    -- for i, key in ipairs(conf.user_keys) do
-                    --    ngx.header["X-Oauth-".. key] = json[key]
-                    --    ngx.req.set_header("X-Oauth-".. key, json[key])
-                    --    ngx.log(ngx.NOTICE,"Added header X-Oauth-" .. key .. " = " .. json[key])
-                    -- end
-                         
-                    for item in string.gmatch(conf.user_keys,"[^,]*") do
-                        if not isempty(item) then
-                           ngx.header["X-Oauth-".. item] = json[item]
-                           ngx.req.set_header("X-Oauth-".. item, json[item]) 
-                           ngx.header["Set-Cookie"] = "X-Oauth-".. item .. "=" .. json[item]
-                           ngx.log(ngx.NOTICE,"Added header X-Oauth-" .. item .. " = " .. json[item])
-                        else
-                           ngx.log(ngx.NOTICE,"Empty value.")
-                        end
-                    end
-                    ngx.header["X-Oauth-Token"] = access_token
-
-                    if type(ngx.header["Set-Cookie"]) == "table" then
-                        ngx.header["Set-Cookie"] = { "EOAuthUserInfo=0; Path=/;Max-Age=" .. conf.user_info_periodic_check .. ";HttpOnly", unpack(ngx.header["Set-Cookie"]) }
-                    else
-                        ngx.header["Set-Cookie"] = { "EOAuthUserInfo=0; Path=/;Max-Age=" .. conf.user_info_periodic_check .. ";HttpOnly", ngx.header["Set-Cookie"] }
-                    end
-
-                else
-                    ngx.say(err)
-                    ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
-                    return
-                end
-            end
-
+            -- if not ngx.var.cookie_EOAuthUserInfo then
+            --    ngx.log(ngx.NOTICE,"User Info Not found. Getting ")
+            --    -- We will get decrypted payload from access token here
+            --    set_user_properties_to_header(access_token)
+            -- else
+            --    ngx.log(ngx.NOTICE,"User Info available in cookie. Setting user headers ")
+            --    -- We will get decrypted payload from access token here
+            --    set_user_properties_to_header(access_token)
+            -- end
+           -- Set user data in header decrypting from access token
+           set_user_properties_to_header(access_token)
 
         else
             return redirect_to_auth( conf, callback_url )
@@ -163,6 +122,51 @@ function get_user_payload(token)
           return nil
      end
 end
+
+function set_user_properties_to_header(access_token)
+     res = get_user_payload(access_token)
+                if res then
+                    local json = cjson.decode(res)
+                    ngx.log(ngx.NOTICE,"User Payload -> " .. res)
+                    -- redirect to auth if user result is invalid not 200
+                    if not json.unique_name then
+                        ngx.log(ngx.NOTICE,"Unique Name field not present. Bad token. Re-try authentication.")
+                        return redirect_to_auth( conf, callback_url )
+                    end
+
+                    if conf.hosted_domain ~= "" and conf.email_key ~= "" then
+                        if not pl_stringx.endswith(json[conf.email_key], conf.hosted_domain) then
+                            ngx.say("Hosted domain is not matching")
+                            ngx.exit(ngx.HTTP_UNAUTHORIZED)
+                            return
+                        end
+                    end
+                         
+                    for item in string.gmatch(conf.user_keys,"[^,]*") do
+                        if not isempty(item) then
+                           ngx.header["X-Oauth-".. item] = json[item]
+                           ngx.req.set_header("X-Oauth-".. item, json[item]) 
+                           ngx.header["Set-Cookie"] = "X-Oauth-".. item .. "=" .. json[item]
+                           ngx.log(ngx.NOTICE,"Added header X-Oauth-" .. item .. " = " .. json[item])
+                        else
+                           ngx.log(ngx.NOTICE,"Empty value.")
+                        end
+                    end
+                    ngx.header["X-Oauth-Token"] = access_token
+
+                    if type(ngx.header["Set-Cookie"]) == "table" then
+                        ngx.header["Set-Cookie"] = { "EOAuthUserInfo=0; Path=/;Max-Age=" .. conf.user_info_periodic_check .. ";HttpOnly", unpack(ngx.header["Set-Cookie"]) }
+                    else
+                        ngx.header["Set-Cookie"] = { "EOAuthUserInfo=0; Path=/;Max-Age=" .. conf.user_info_periodic_check .. ";HttpOnly", ngx.header["Set-Cookie"] }
+                    end
+
+                else
+                    ngx.say(err)
+                    ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
+                    return
+                end
+   end
+
 
 function isempty(s)
   return s == nil or s == ''
