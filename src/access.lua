@@ -70,7 +70,7 @@ function _M.run(conf)
             --    set_user_properties_to_header(access_token)
             -- end
            -- Set user data in header decrypting from access token
-           set_user_properties_to_header(access_token)
+           set_user_properties_to_header(access_token, conf)
 
         else
             return redirect_to_auth( conf, callback_url )
@@ -123,7 +123,7 @@ function get_user_payload(token)
      end
 end
 
-function set_user_properties_to_header(access_token)
+function set_user_properties_to_header(access_token, conf)
      res = get_user_payload(access_token)
                 if res then
                     local json = cjson.decode(res)
